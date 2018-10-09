@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.sql.mapper.TCorpDistMapper">
+
+	<resultMap id="TDSBaseResultMap" type="cn.sql.pojo.TCorpDist">
+		<id column="ORG" property="org" jdbcType="VARCHAR" />
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<id column="SEQ_ID" property="seqId" jdbcType="VARCHAR" />
+		<result column="DIST_NAME" property="distName" jdbcType="VARCHAR" /> <!-- 股东类型 -->
+		<result column="FARE_PLACE" property="farePlace" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<!-- 通过公司联合主键获得所有的子公司 -->
+	<select id="findTDS" resultMap="TDSBaseResultMap">
+		select a.ORG,a.ID,a.SEQ_ID,
+		a.DIST_NAME,a.FARE_PLACE
+		from t_corp c, t_corp_dist a ,t_m_corp_corp_dist b
+		where a.ID= b.SUB_ID and a.SEQ_ID=b.SUB_SEQ_ID and a.ORG=b.SUB_ORG
+		and c.ORG=b.ORG and c.ID=b.ID and c.SEQ_ID=b.SEQ_ID
+		and b.ORG=#{0} and b.ID=#{1} and b.SEQ_ID=#{2}
+	</select>
+</mapper>

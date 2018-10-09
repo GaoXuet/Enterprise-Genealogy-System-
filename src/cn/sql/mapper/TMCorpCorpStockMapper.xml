@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.sql.mapper.TMCorpCorpStockMapper">
+
+	<resultMap id="BaseResultMap" type="cn.sql.pojo.TMCorpCorpStock">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<id column="SEQ_ID" property="seqId" jdbcType="VARCHAR" />
+		<id column="ORG" property="org" jdbcType="VARCHAR" />
+		<id column="SUB_ORG" property="subOrg" jdbcType="VARCHAR" />
+		<id column="SUB_ID" property="subId" jdbcType="VARCHAR" />
+		<id column="SUB_SEQ_ID" property="subSeqId" jdbcType="VARCHAR" />
+		<result column="id_T_M_CORP_CORP_STOCK" property="idTMCorpCorpStock"
+			jdbcType="INTEGER" />
+	</resultMap>
+
+	<!-- 5.29通过公司找 所有股东id -->
+	<select id="findStocks" resultMap="BaseResultMap">
+		SELECT a.* from
+		t_m_corp_corp_stock a
+		where ORG=#{0}
+		and ID=#{1}
+		and
+		SEQ_ID=#{2}
+	</select>
+
+	<resultMap id="TCSBaseResultMap" type="cn.sql.pojo.TCorpStock">
+		<id column="ORG" property="org" jdbcType="VARCHAR" />
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<id column="SEQ_ID" property="seqId" jdbcType="VARCHAR" />
+		<result column="id_t_corp_stock" property="idTCorpStock"
+			jdbcType="INTEGER" />
+		<result column="STOCK_TYPE" property="stockType" jdbcType="VARCHAR" />
+		<result column="COUNTRY" property="country" jdbcType="VARCHAR" />
+		<result column="CERTIFICATE_TYPE" property="certificateType"
+			jdbcType="VARCHAR" />
+		<result column="CERTIFICATE_NO" property="certificateNo"
+			jdbcType="VARCHAR" />
+		<result column="STOCK_NAME" property="stockName" jdbcType="VARCHAR" />
+		<result column="STOCK_CAPI_TYPE" property="stockCapiType"
+			jdbcType="VARCHAR" />
+		<result column="STOCK_CAPI" property="stockCapi" jdbcType="VARCHAR" />
+		<result column="STOCK_CAPI_DOLLAR" property="stockCapiDollar"
+			jdbcType="VARCHAR" />
+		<result column="STOCK_CAPI_RMB" property="stockCapiRmb"
+			jdbcType="VARCHAR" />
+		<result column="STOCK_PERCENT" property="stockPercent"
+			jdbcType="VARCHAR" />
+		<result column="STOCK_RATE_RMB" property="stockRateRmb"
+			jdbcType="VARCHAR" />
+		<result column="STOCK_RATE_DOLLAR" property="stockRateDollar"
+			jdbcType="VARCHAR" />
+		<result column="CREATE_DATE" property="createDate" jdbcType="DATE" />
+	</resultMap>
+
+	<!--根据联合主键list查找股东list -->
+	<select id="findStocksByCorp_Stock_IDs" resultMap="TCSBaseResultMap"
+		parameterType="java.util.List">
+		SELECT a.* from t_corp_stock a
+		<where>
+			<if test="list!= null">
+				ID in
+				<foreach collection="list" item="item" open="(" close=")"
+					separator=",">
+					#{item.subId}
+				</foreach>
+				and SEQ_ID in
+				<foreach collection="list" item="item" open="(" close=")"
+					separator=",">
+					#{item.subSeqId}
+				</foreach>
+				and ORG in
+				<foreach collection="list" item="item" open="(" close=")"
+					separator=",">
+					#{item.subOrg}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	
+	
+	
+</mapper>

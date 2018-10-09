@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sql.mapper.TCorpMapper">
+
+	<!-- 企业所有信息 -->
+	<resultMap id="QYSYBaseResultMap" type="cn.sql.pojo.TCorps">
+		<id column="id_T_CORP" property="idTCorp" jdbcType="INTEGER" />
+		<id column="ORG" property="org" jdbcType="VARCHAR" />
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<id column="SEQ_ID" property="seqId" jdbcType="VARCHAR" />
+		<result column="REG_NO" property="regNo" jdbcType="VARCHAR" />
+		<result column="CORP_NAME" property="corpName" jdbcType="VARCHAR" />
+		<result column="ADDR" property="addr" jdbcType="VARCHAR" />
+		<result column="BELONG_ORG" property="belongOrg" jdbcType="VARCHAR" />
+		<result column="BELONG_DIST_ORG" property="belongDistOrg"
+			jdbcType="VARCHAR" />
+		<result column="BELONG_TRADE" property="belongTrade" jdbcType="VARCHAR" />
+		<result column="ECON_KIND" property="econKind" jdbcType="VARCHAR" />
+		<result column="ADMIT_MAIN" property="admitMain" jdbcType="VARCHAR" />
+		<result column="START_DATE" property="startDate" jdbcType="VARCHAR" />
+		<result column="CHECK_DATE" property="checkDate" jdbcType="DATE" />
+		<result column="OPER_MAN_IDENT_NO" property="operManIdentNo"
+			jdbcType="VARCHAR" />
+		<result column="OPER_MAN_NAME" property="operManName" jdbcType="VARCHAR" />
+		<result column="CORP_STATUS" property="corpStatus" jdbcType="VARCHAR" />
+		<result column="REG_CAPI" property="regCapi" jdbcType="VARCHAR" />
+		<result column="FARE_TERM_START" property="fareTermStart"
+			jdbcType="DATE" />
+		<result column="FARE_TERM_END" property="fareTermEnd" jdbcType="VARCHAR" />
+		<result column="FARE_SCOPE" property="fareScope" jdbcType="VARCHAR" />
+		<result column="UNI_SCID" property="uniScid" jdbcType="VARCHAR" />
+		<result column="TEL" property="tel" jdbcType="VARCHAR" />
+		<result column="WEB_URL" property="webUrl" jdbcType="VARCHAR" />
+		<result column="EMAIL" property="email" jdbcType="VARCHAR" />
+		<result column="PRAC_PERSON_NUM" property="pracPersonNum"
+			jdbcType="VARCHAR" />
+		<result column="ORG_INST_CODE" property="orgInstCode" jdbcType="VARCHAR" />
+		<result column="TAXPAY_NUM" property="taxpayNum" jdbcType="VARCHAR" />
+		<result column="STAFF_SIZE" property="staffSize" jdbcType="VARCHAR" />
+		<result column="ENGLISH_NAME" property="englishName" jdbcType="VARCHAR" />
+		<result column="FORMER_NAME" property="formerName" jdbcType="VARCHAR" />
+		<result column="CREATE_DATE" property="createDate" jdbcType="DATE" />
+		<result column="CREATE_ORG" property="createOrg" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<!-- 企业大概信息 -->
+	<resultMap id="QYDGBaseResultMap" type="cn.sql.pojo.TCorp">
+		<id column="id_T_CORP" property="idTCorp" jdbcType="INTEGER" />
+		<id column="ORG" property="org" jdbcType="VARCHAR" />
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<id column="SEQ_ID" property="seqId" jdbcType="VARCHAR" />
+		<result column="REG_NO" property="regNo" jdbcType="VARCHAR" />
+		<result column="CORP_NAME" property="corpName" jdbcType="VARCHAR" />
+		<result column="BELONG_DIST_ORG" property="belongDistOrg"
+			jdbcType="VARCHAR" />
+		<result column="OPER_MAN_IDENT_NO" property="operManIdentNo"
+			jdbcType="VARCHAR" />
+		<result column="OPER_MAN_NAME" property="operManName" jdbcType="VARCHAR" />
+	</resultMap>
+
+
+	<!-- 企业大概信息 -->
+	<resultMap id="QYDGBaseResultMap1" type="cn.sql.pojo.TCorp">
+		<id column="id_T_CORP" property="idTCorp" jdbcType="INTEGER" />
+		<result column="ADDR" property="addr" jdbcType="VARCHAR" />
+		<result column="CORP_NAME" property="corpName" jdbcType="VARCHAR" />
+		<result column="CORP_STATUS" property="corpStatus" jdbcType="VARCHAR" />
+		<result column="START_DATE" property="startDate" jdbcType="VARCHAR" />
+		<result column="OPER_MAN_NAME" property="operManName" jdbcType="VARCHAR" />
+		<result column="EMAIL" property="email" jdbcType="VARCHAR" />
+		<result column="REG_CAPI" property="regCapi" jdbcType="VARCHAR" />
+	</resultMap>
+
+
+	<!-- 根据企业名称 进行模糊查询 返回List -->
+	<select id="findByCorpName_mo" parameterType="java.lang.String"
+		resultMap="QYDGBaseResultMap">
+		select * from t_corp where CORP_NAME like '%${value}%'
+	</select>
+
+	<!-- 根据企业id 进行详细查询 返回TCorp -->
+	<select id="findByCorpId" parameterType="Integer" resultMap="QYSYBaseResultMap">
+		select * from t_corp where id_T_CORP = #{id}
+	</select>
+
+	<!-- 获取企业信息列表 返回List -->
+	<!-- 获取企业信息列表 ~大概 -->
+	<select id="getTCorpsList" resultMap="QYDGBaseResultMap1">
+		select * from T_CORP
+	</select>
+
+	<!-- 获取企业信息分页显示 -->
+	<select id="getTCorpsListByPage" resultMap="QYDGBaseResultMap">
+		select * from t_corp
+		where CORP_NAME like concat(concat('%',#{0}),'%') limit #{1},#{2}
+	</select>
+	<!-- 获取企业信息分页显示 -->
+	<select id="getShow_lian" parameterType="String" resultType="java.lang.String">
+		select CORP_NAME from T_CORP where CORP_NAME like '%${value}%' limit
+		0,8
+	</select>
+
+</mapper>

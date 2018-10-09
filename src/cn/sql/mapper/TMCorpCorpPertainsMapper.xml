@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sql.mapper.TMCorpCorpPertainsMapper">
+
+	<resultMap id="TMCBaseResultMap" type="cn.sql.pojo.TMCorpCorpPertains">
+		<id column="ID" jdbcType="VARCHAR" property="id" />
+		<id column="SEQ_ID" jdbcType="VARCHAR" property="seqId" />
+		<id column="ORG" jdbcType="VARCHAR" property="org" />
+		<id column="SUB_ORG" jdbcType="VARCHAR" property="subOrg" />
+		<id column="SUB_ID" jdbcType="VARCHAR" property="subId" />
+		<id column="SUB_SEQ_ID" jdbcType="VARCHAR" property="subSeqId" />
+		<result column="id_T_M_CORP_CORP_PERTAINS" jdbcType="INTEGER"
+			property="idTMCorpCorpPertains" />
+	</resultMap>
+
+	<!-- 通过公司主键找到公司的员工主键信息 -->
+	<select id="findCorPertains" resultMap="TMCBaseResultMap">
+		SELECT a.* from
+		t_m_corp_corp_pertains a
+		where ORG=#{0}
+		and ID=#{1}
+		and SEQ_ID=#{2}
+	</select>
+
+	<!-- <resultMap id="TCPersBaseResultMap" type="cn.sql.pojo.TCorpPertains"> 
+		<id column="id_T_CORP_PERTAINS" property="idTCorpPertains" jdbcType="INTEGER" 
+		/> <id column="ORG" property="org" jdbcType="VARCHAR" /> <id column="ID" 
+		property="id" jdbcType="VARCHAR" /> <id column="SEQ_ID" property="seqId" 
+		jdbcType="VARCHAR" /> <result column="CERTIFICATE_TYPE" property="certificateType" 
+		jdbcType="VARCHAR" /> <result column="PERSON_NAME" property="personName" 
+		jdbcType="VARCHAR" /> <result column="PERSON_TYPE" property="personType" 
+		jdbcType="VARCHAR" /> <result column="CERTIFICATE_NO" property="certificateNo" 
+		jdbcType="VARCHAR" /> <result column="SELECT_TYPE" property="selectType" 
+		jdbcType="VARCHAR" /> <result column="HOLDPOST_START" property="holdpostStart" 
+		jdbcType="DATE" /> <result column="HOLDPOST_EDN" property="holdpostEdn" jdbcType="DATE" 
+		/> <result column="SEX" property="sex" jdbcType="VARCHAR" /> <result column="AGE" 
+		property="age" jdbcType="VARCHAR" /> <result column="COUNTRY" property="country" 
+		jdbcType="VARCHAR" /> <result column="CREATE_DATE" property="createDate" 
+		jdbcType="DATE" /> </resultMap> -->
+
+	<resultMap id="TCPersBaseResultMap" type="cn.sql.pojo.TCorpPertains">
+		<id column="ORG" property="org" jdbcType="VARCHAR" />
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<id column="SEQ_ID" property="seqId" jdbcType="VARCHAR" />
+		<result column="PERSON_NAME" property="personName" jdbcType="VARCHAR" />
+		<result column="PERSON_TYPE" property="personType" jdbcType="VARCHAR" />
+		<result column="HOLDPOST_EDN" property="holdpostEdn" jdbcType="DATE" />
+	</resultMap>
+
+	<!-- 根据公司-员工list 找到所有的详细员工信息 -->
+	<select id="findTCPers1" resultMap="TCPersBaseResultMap"
+		parameterType="java.util.List">
+		SELECT a.* from t_corp_pertains a
+		<where>
+			<if test="list!= null">
+				ID in
+				<foreach collection="list" item="item" open="(" close=")"
+					separator=",">
+					#{item.subId}
+				</foreach>
+				and SEQ_ID in
+				<foreach collection="list" item="item" open="(" close=")"
+					separator=",">
+					#{item.subSeqId}
+				</foreach>
+				and ORG in
+				<foreach collection="list" item="item" open="(" close=")"
+					separator=",">
+					#{item.subOrg}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+
+
+
+
+	<!--根据公司-员工lisrt 找到所有的详细员工信息 -->
+	<select id="findTCPers" resultMap="TCPersBaseResultMap">
+		SELECT a.ORG
+		,a.ID,a.SEQ_ID,a.PERSON_NAME,a.PERSON_TYPE,a.HOLDPOST_EDN
+		from
+		t_corp_pertains a,t_corp b,t_m_corp_corp_pertains c
+		where
+		a.ORG=c.SUB_ORG and a.ID=c.SUB_ID and a.SEQ_ID=c.SUB_SEQ_ID
+		and
+		b.ORG=c.ORG and b.ID=c.ID and b.SEQ_ID=c.SEQ_ID
+		and b.ORG=#{0} and
+		b.ID=#{1} and b.SEQ_ID=#{2}
+	</select>
+
+
+	<!-- 主要人员在外任职 -->
+	<select id="getYSRZ" resultType="cn.sql.pojo.TCYSgx">
+		SELECT d.CORP_NAME as
+		corpname,f.PERSON_NAME as personName,f.PERSON_TYPE as
+		personType
+		from
+		t_corp d,t_m_corp_corp_pertains e,t_corp_pertains f
+		where NOT
+		(e.ORG=#{0} and e.ID=#{1} and e.SEQ_ID=#{2})
+		and d.ORG=e.ORG and d.ID
+		=e.ID and d.SEQ_ID =e.SEQ_ID
+		and e.SUB_ORG= f.ORG and e.SUB_ID=f.ID and
+		e.SUB_SEQ_ID=f.SEQ_ID
+		and f.PERSON_NAME in
+		(SELECT
+		distinct(ff.PERSON_NAME)
+		from t_corp dd,t_m_corp_corp_pertains
+		ee,t_corp_pertains ff
+		where dd.ORG=ee.ORG and dd.ID =ee.ID and
+		dd.SEQ_ID =ee.SEQ_ID
+		and ee.SUB_ORG= ff.ORG and ee.SUB_ID=ff.ID and
+		ee.SUB_SEQ_ID=ff.SEQ_ID
+		and ff.PERSON_TYPE
+		in("董事长","总经理","副总经理","法人","监事","高管")
+		and dd.ORG=#{0} and dd.ID=#{1}
+		and dd.SEQ_ID=#{2}
+		)
+	</select>
+
+	<!-- 主要人员在外投资 -->
+	<select id="getRYTZ" resultType="cn.sql.pojo.TCYSgx">
+		select y.CORP_NAME as
+		corpname,c.PERSON_NAME as personName,c.PERSON_TYPE as
+		personType
+		from
+		t_corp a,t_m_corp_corp_pertains b,t_corp_pertains
+		c,t_m_corp_corp_stock x,t_corp y
+		where a.ORG=#{0} and a.ID=#{1} and
+		a.SEQ_ID=#{2}
+		and a.ORG=b.ORG and a.ID =b.ID and a.SEQ_ID =b.SEQ_ID
+		and
+		b.SUB_ORG= c.ORG and b.SUB_ID=c.ID and b.SUB_SEQ_ID=c.SEQ_ID
+		and
+		c.PERSON_TYPE in ("董事长","总经理","副总经理","法人","监事","高管")
+		and
+		x.SUB_ORG=c.ORG and x.SUB_ID=c.ID and x.SUB_SEQ_ID=c.SEQ_ID
+		and
+		y.ORG=x.ORG and y.ID =x.ID and y.SEQ_ID =x.SEQ_ID
+	</select>
+</mapper>

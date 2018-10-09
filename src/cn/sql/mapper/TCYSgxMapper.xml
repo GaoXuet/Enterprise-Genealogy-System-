@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.sql.mapper.TCYSgxMapper">
+
+
+	<!-- 主要人员在外投资的情况 原始值 876 19191 9 -->
+	<select id="getRYTZ" resultType="cn.sql.pojo.TCYSgx">
+		SELECT m.CORP_NAME as
+		corpname,k.PERSON_NAME as personName,k.PERSON_TYPE as
+		personType
+		from
+		t_corp m,t_m_corp_corp_stock n,t_corp_pertains k
+		where
+		NOT (m.ORG=#{0}
+		and m.ID=#{1} and m.SEQ_ID=#{2})
+		and n.SUB_ORG=k.ORG and n.SUB_ID=k.ID
+		and n.SUB_SEQ_ID=k.SEQ_ID
+		and n.ORG=m.ORG and n.ID=m.ID and
+		n.SEQ_ID=m.SEQ_ID
+		and
+		(k.PERSON_TYPE,k.PERSON_NAME,k.ORG,k.ID,k.SEQ_ID)IN
+		(
+		select
+		c.PERSON_TYPE,c.PERSON_NAME,c.ORG,c.ID,c.SEQ_ID
+		from t_corp
+		a,t_m_corp_corp_pertains b,t_corp_pertains c
+		where a.ORG=#{0} and
+		a.ID=#{1} and a.SEQ_ID=#{2}
+		and a.ORG=b.ORG and a.ID =b.ID and a.SEQ_ID
+		=b.SEQ_ID
+		and b.SUB_ORG= c.ORG and b.SUB_ID=c.ID and
+		b.SUB_SEQ_ID=c.SEQ_ID
+		and c.PERSON_TYPE in
+		("董事","经理","法人代表","监事","执行董事兼股东")
+		)
+	</select>
+
+	<!-- 在外任职 原始数据 876 999999 9 -->
+	<select id="getYSRZ" resultType="cn.sql.pojo.TCYSgx">
+		SELECT d.CORP_NAME as
+		corpname,f.PERSON_NAME as personName,f.PERSON_TYPE as
+		personType
+		from
+		t_corp d,t_m_corp_corp_pertains e,t_corp_pertains f
+		where NOT
+		(e.ORG=#{0} and e.ID=#{1} and e.SEQ_ID=#{2})
+		and d.ORG=e.ORG and d.ID
+		=e.ID and d.SEQ_ID =e.SEQ_ID
+		and e.SUB_ORG= f.ORG and e.SUB_ID=f.ID and
+		e.SUB_SEQ_ID=f.SEQ_ID
+		and f.PERSON_NAME in
+		(SELECT
+		distinct(ff.PERSON_NAME)
+		from t_corp dd,t_m_corp_corp_pertains
+		ee,t_corp_pertains ff
+		where dd.ORG=ee.ORG and dd.ID =ee.ID and
+		dd.SEQ_ID =ee.SEQ_ID
+		and ee.SUB_ORG= ff.ORG and ee.SUB_ID=ff.ID and
+		ee.SUB_SEQ_ID=ff.SEQ_ID
+		and ff.PERSON_TYPE in
+		("总经理","董事","法人代表","监事","执行董事兼股东")
+		and dd.ORG=#{0} and dd.ID=#{1} and
+		dd.SEQ_ID=#{2}
+		)
+	</select>
+</mapper>

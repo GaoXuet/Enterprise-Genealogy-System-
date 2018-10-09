@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.sql.mapper.TCorpTZMapper">
+
+	<!-- 1股东大概信息 -->
+	<resultMap id="TCSBaseResultMap" type="cn.sql.pojo.TCorpStock">
+		<id column="ORG" property="org" jdbcType="VARCHAR" />
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<id column="SEQ_ID" property="seqId" jdbcType="VARCHAR" />
+		<result column="STOCK_TYPE" property="stockType" jdbcType="VARCHAR" /> <!-- 股东类型 -->
+		<result column="STOCK_NAME" property="stockName" jdbcType="VARCHAR" />
+		<result column="STOCK_CAPI" property="stockCapi" jdbcType="VARCHAR" /><!-- 
+			认缴数额 -->
+		<result column="STOCK_PERCENT" property="stockPercent"
+			jdbcType="VARCHAR" /><!-- 出资百分比 -->
+	</resultMap>
+
+
+	<!-- 2投资公司大概信息 -->
+	<resultMap id="TZBaseResultMap" type="cn.sql.pojo.TCorp">
+		<id column="id_T_CORP" property="idTCorp" jdbcType="INTEGER" />
+		<id column="ORG" property="org" jdbcType="VARCHAR" />
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<id column="SEQ_ID" property="seqId" jdbcType="VARCHAR" />
+		<result column="REG_NO" property="regNo" jdbcType="VARCHAR" />
+		<result column="CORP_NAME" property="corpName" jdbcType="VARCHAR" />
+		<result column="BELONG_DIST_ORG" property="belongDistOrg"
+			jdbcType="VARCHAR" />
+		<result column="OPER_MAN_IDENT_NO" property="operManIdentNo"
+			jdbcType="VARCHAR" />
+		<result column="OPER_MAN_NAME" property="operManName" jdbcType="VARCHAR" />
+		<!-- 查询子模块 怎么用了呢？ -->
+		<collection property="TCorpchilds" ofType="cn.sql.pojo.TCorp" />
+	</resultMap>
+
+	<!-- 2投资公司大概信息 -->
+	<resultMap id="TZBaseResultMap1" type="cn.sql.pojo.TCorpSimple">
+		<id column="CORP_NAME" property="csname" jdbcType="VARCHAR" />
+		<id column="STOCK_PERCENT" property="proportion" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<!-- 投资族谱-对外投资-公司 -->
+	<select id="findTZ1" resultMap="TZBaseResultMap1">
+		select
+		a.CORP_NAME,c.STOCK_PERCENT
+		from t_corp a ,
+		t_m_corp_corp_stock
+		b,t_corp_stock c
+		where a.ID=b.ID and
+		a.SEQ_ID=b.SEQ_ID and
+		a.ORG=b.ORG
+		and b.SUB_ORG=c.ORG
+		and b.SUB_ID=c.ID
+		and b.SUB_SEQ_ID=c.SEQ_ID
+		and
+		b.ORG=#{0} and b.ID=#{1} and b.SEQ_ID=#{2}
+	</select>
+
+
+	<!-- 投资族谱-对外投资-公司 -->
+	<select id="findTZ" parameterType="java.lang.String" resultMap="TZBaseResultMap">
+		select a.id_T_CORP,a.ORG,a.ID,a.SEQ_ID,a.REG_NO,a.CORP_NAME,
+		a.BELONG_DIST_ORG,a.OPER_MAN_IDENT_NO,a.OPER_MAN_NAME
+		from t_corp a ,t_m_corp_corp_stock b ,t_corp c
+		where a.ID=b.ID and
+		a.SEQ_ID=b.SEQ_ID and a.ORG=b.ORG
+		and c.ID=b.SUB_ID and c.ORG=b.SUB_ORG and c.SEQ_ID=b.SUB_SEQ_ID
+		and c.ORG=#{0} and c.ID=#{1} and c.SEQ_ID=#{2}
+	</select>
+
+	<!-- 投资族谱-股东 ~~ 根据公司主键直接查股东-一个方法 -->
+	<select id="findstocks" parameterType="java.lang.String"
+		resultMap="TCSBaseResultMap">
+		SELECT a.ORG ,a.ID, a.SEQ_ID,
+		a.STOCK_TYPE,a.STOCK_NAME,a.STOCK_CAPI,a.STOCK_PERCENT
+		from
+		t_corp_stock a,t_corp b,t_m_corp_corp_stock c
+		where
+		b.ORG=c.ORG and
+		b.ID=c.ID and b.SEQ_ID=c.SEQ_ID
+		and a.ORG=c.SUB_ORG and a.ID=c.SUB_ID
+		and a.SEQ_ID=c.SUB_SEQ_ID
+		and b.ORG=#{0} and b.ID=#{1} and
+		b.SEQ_ID=#{2}
+	</select>
+
+	<!-- 根据公司名称 查找对外投资的公司名称 建立三个表的关联 -->
+	<select id="findCorpNameByStockName" parameterType="java.lang.String"
+		resultType="java.lang.String">
+		select a.CORP_NAME from t_corp a
+		,t_m_corp_corp_stock b
+		,t_corp_stock c
+		where a.ID=b.ID
+		and a.SEQ_ID=b.SEQ_ID
+		and a.ORG=b.ORG
+		and
+		b.SUB_ORG=c.ORG
+		and b.SUB_ID=c.ID
+		and b.SUB_SEQ_ID=c.SEQ_ID
+		and
+		c.STOCK_NAME = #{name}
+	</select>
+
+	<!-- 根据公司名称 查找股东的公司名称 建立三个表的关联 -->
+	<select id="findStockNameByStockName" parameterType="java.lang.String"
+		resultType="java.lang.String">
+		select a.STOCK_NAME
+		from t_corp_stock a,
+		t_m_corp_corp_stock
+		b,
+		t_corp c
+		where a.ID=b.SUB_ID
+		and
+		a.SEQ_ID=b.SUB_SEQ_ID
+		and
+		a.ORG=b.SUB_ORG
+		and b.ID=c.ID
+		and
+		b.SEQ_ID=c.SEQ_ID
+		and b.ORG=c.ORG
+		and
+		c.CORP_NAME=#{name}
+	</select>
+
+	<!-- 根据人名 查找所投资的公司名称 建立三个表的关联 -->
+	<select id="findCorpNameByPersonName" parameterType="java.lang.String"
+		resultType="java.lang.String">
+		select c.CORP_NAME
+		from t_corp_stock a,
+		t_m_corp_corp_stock
+		b,
+		t_corp c
+		where a.ID=b.SUB_ID
+		and a.SEQ_ID=b.SUB_SEQ_ID
+		and
+		a.ORG=b.SUB_ORG
+		and b.ID=c.ID
+		and b.SEQ_ID=c.SEQ_ID
+		and b.ORG=c.ORG
+		and
+		a.STOCK_NAME=#{name}
+	</select>
+
+</mapper>
